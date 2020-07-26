@@ -1,0 +1,126 @@
+1 A method reference to a static method (for example, the method parseInt of
+Integer, written Integer::parseInt)
+2 A method reference to an instance method of an arbitrary type (for example,
+the method length of a String, written String::length)
+3 A method reference to an instance method of an existing object or expression (for
+example, suppose you have a local variable expensiveTransaction that holds
+an object of type Transaction, which supports an instance method getValue;
+you can write expensiveTransaction::getValue)
+
+
+
+
+Map<Dish.Type, List<Dish>> dishesByType =
+menu.stream().collect(groupingBy(Dish::getType));
+
+
+List<String> lowCaloricDishesName =
+menu.stream()
+.filter(d -> d.getCalories() < 400)
+.sorted(comparing(Dish::getCalories))
+.map(Dish::getName)
+.collect(toList());
+
+
+List<String> title = Arrays.asList("Modern", "Java", "In", "Action");
+Stream<String> s = title.stream();
+s.forEach(System.out::println);
+s.forEach(System.out::println);
+Keep in mind that you can consume a stream only once!
+
+
+A data source (such as a collection) to perform a query on
+ A chain of intermediate operations that form a stream pipeline
+ A terminal operation that executes the stream pipeline and produces a result
+
+
+Summary
+ A stream is a sequence of elements from a source that supports data-processing
+operations.
+ Streams make use of internal iteration: the iteration is abstracted away through
+operations such as filter, map, and sorted.
+ There are two types of stream operations: intermediate and terminal operations.
+ Intermediate operations such as filter and map return a stream and can be
+chained together. They’re used to set up a pipeline of operations but don’t produce
+any result.
+ Terminal operations such as forEach and count return a non-stream value and
+process a stream pipeline to return a result.
+ The elements of a stream are computed on demand (“lazily”).
+
+
+
+// Java 9 version update
+List<Dish> slicedMenu1
+= specialMenu.stream()
+.takeWhile(dish -> dish.getCalories() < 320)
+.collect(toList());
+USING DROPWHILE
+How about getting the other elements though? How about finding the elements that
+have greater than 320 calories? You can use the dropWhile operation for this:
+List<Dish> slicedMenu2
+= specialMenu.stream()
+.dropWhile(dish -> dish.getCalories() < 320)
+.collect(toList());
+
+
+
+Streams support the skip(n) method to return a stream that discards the first n elements.
+If the stream has fewer than n elements, an empty stream is returned. Note that
+limit(n) and skip(n) are complementary! For example, the following code skips the
+first two dishes that have more than 300 calories and returns the rest. Figure 5.4 illustrates
+this query.
+
+
+Another common data processing idiom is finding whether some elements in a set of
+data match a given property. The Streams API provides such facilities through the
+allMatch, anyMatch, noneMatch, findFirst, and findAny methods of a stream.
+
+say you need to evaluate a large boolean expression chained with and
+operators. You need only find out that one expression is false to deduce that the
+whole expression will return false, no matter how long the expression is; there’s no
+need to evaluate the entire expression. This is what short-circuiting refers to.
+
+OPTIONAL IN A NUTSHELL
+ isPresent() returns true if Optional contains a value, false otherwise.
+ ifPresent(Consumer<T> block) executes the given block if a value is present.
+We introduced the Consumer functional interface in chapter 3; it lets you pass a
+lambda that takes an argument of type T and returns void.
+ T get() returns the value if present; otherwise it throws a NoSuchElement-
+Exception.
+ T orElse(T other) returns the value if present; otherwise it returns a default
+value.	
+
+
+When to use findFirst and findAny
+You may wonder why we have both findFirst and findAny. The answer is parallelism.
+Finding the first element is more constraining in parallel. If you don’t care about
+which element is returned, use findAny because it’s less constraining when using
+parallel streams.
+
+Stream operations: stateless vs. stateful
+You’ve seen a lot of stream operations. An initial presentation can make them seem
+a panacea. Everything works smoothly, and you get parallelism for free when you use
+parallelStream instead of stream to get a stream from a collection.
+Certainly for many applications this is the case, as you’ve seen in the previous examples.
+You can turn a list of dishes into a stream, filter to select various dishes of
+a certain type, then map down the resulting stream to add on the number of calories,
+and then reduce to produce the total number of calories of the menu. You can even
+do such stream calculations in parallel. But these operations have different characteristics.
+There are issues about what internal state they need to operate.
+Operations like map and filter take each element from the input stream and produce
+zero or one result in the output stream. These operations are in general stateless: they
+don’t have an internal state (assuming the user-supplied lambda or method reference
+has no internal mutable state).
+But operations like reduce, sum, and max need to have internal state to accumulate
+the result. In this case the internal state is small. In our example it consisted of an
+int or double. The internal state is of bounded size no matter how many elements
+are in the stream being processed.
+By contrast, some operations such as sorted or distinct seem at first to behave
+like filter or map—all take a stream and produce another stream (an intermediate
+operation)—but there’s a crucial difference. Both sorting and removing duplicates
+from a stream require knowing the previous history to do their job. For example, sorting
+requires all the elements to be buffered before a single item can be added to the
+output stream; the storage requirement of the operation is unbounded. This can be
+problematic if the data stream is large or infinite. (What should reversing the stream
+of all prime numbers do? It should return the largest prime number, which mathematics
+tells us doesn’t exist.) We call these operations stateful operations.

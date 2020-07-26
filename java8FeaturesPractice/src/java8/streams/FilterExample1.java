@@ -28,15 +28,11 @@ public class FilterExample1 {
                 new Dish("prawns", false, 300, Dish.Type.FISH),
                 new Dish("salmon", false, 450, Dish.Type.FISH));
         List<Dish> vegetarianDishes = new ArrayList<>();
-        List<Dish> nonVegDishes = new ArrayList<>();
 
         for (Dish dish : menu) {
             if (dish.isVegetarian()) {
                 vegetarianDishes.add(dish);
-            } else {
-                nonVegDishes.add(dish);
             }
-
         }
         menu.stream().filter(Dish::isVegetarian).forEach(System.out::println);
     }

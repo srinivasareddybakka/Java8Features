@@ -124,3 +124,9 @@ output stream; the storage requirement of the operation is unbounded. This can b
 problematic if the data stream is large or infinite. (What should reversing the stream
 of all prime numbers do? It should return the largest prime number, which mathematics
 tells us doesn’t exist.) We call these operations stateful operations.
+
+
+Parallel Stream:
+A parallel
+stream is a stream that splits its elements into multiple chunks, processing each chunk
+with a different thread.

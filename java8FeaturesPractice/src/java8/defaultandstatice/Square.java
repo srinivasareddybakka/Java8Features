@@ -3,7 +3,7 @@ package java8.defaultandstatice;
 public class Square implements Resizable{
     @Override
     public int getHeight() {
-        return 0;
+        return 5;
     }
 
     @Override
